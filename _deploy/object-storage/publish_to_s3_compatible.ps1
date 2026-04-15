@@ -69,7 +69,7 @@ $PreviewArgs = Add-OptionalArgs @(
     "s3", "cp", $BundleDir, $Destination,
     "--recursive",
     "--exclude", "*",
-    "--include", "ticket-preview-*.png",
+    "--include", "ticket-previews/*",
     "--cache-control", "public, max-age=604800, immutable"
 )
 Invoke-Aws $PreviewArgs
@@ -77,5 +77,5 @@ Invoke-Aws $PreviewArgs
 if ($PublicUrl.Trim()) {
     Write-Host ""
     Write-Host "Set the repo QR to the final public URL with:"
-    Write-Host ('.venv\Scripts\python.exe DataAnalysisExpert\build_always_on_site_bundle.py --public-url "' + $PublicUrl + '" --skip-build --skip-bundle')
+    Write-Host ('.venv\Scripts\python.exe DataAnalysisExpert\generate_qr.py "' + $PublicUrl + '" --output DataAnalysisExpert\coolman-ticket-portal-qr.png')
 }

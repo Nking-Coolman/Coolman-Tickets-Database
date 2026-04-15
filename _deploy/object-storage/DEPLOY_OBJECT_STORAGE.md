@@ -5,7 +5,7 @@ Use this when you want the ticket site on S3-compatible storage with a CDN or cu
 Examples: Cloudflare R2, Backblaze B2 (S3 API), AWS S3, MinIO.
 
 Important:
-- The site expects to live at the host root so /tickets-data.json and /ticket-preview-*.png resolve unchanged.
+- The site expects to live at the host root so /tickets-data.json and /ticket-previews/* resolve unchanged.
 - If you use a CDN or custom domain, point the domain root at this bucket/container output.
 - The helper script excludes the _deploy folder from upload.
 

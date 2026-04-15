@@ -8,7 +8,7 @@
     @data path /tickets-data.json
     header @data Cache-Control "no-cache, must-revalidate"
 
-    @previews path_regexp preview ^/ticket-preview-.*\.png$
+    @previews path_regexp preview ^/ticket-previews/.*\.png$
     header @previews Cache-Control "public, max-age=604800, immutable"
 
     file_server

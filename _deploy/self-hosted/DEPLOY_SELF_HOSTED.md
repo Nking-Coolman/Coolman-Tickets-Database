@@ -17,4 +17,4 @@ Examples for SITE_ADDRESS:
 Notes:
 - Caddy serves /index.html and /tickets-data.json with no-cache headers so refreshes show quickly.
 - Preview PNGs are cached for 7 days because they are large and rarely change.
-- Keep the site at the host root so /tickets-data.json and /ticket-preview-*.png work unchanged.
+- Keep the site at the host root so /tickets-data.json and /ticket-previews/* work unchanged.

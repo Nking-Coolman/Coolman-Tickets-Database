@@ -4,6 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Coolman Ticket Lookup</title>
+	<!-- Optional UI enhancement layer: remove these Syncfusion CDN includes to fall back to the native search/table experience. -->
+	<link rel="stylesheet" href="https://cdn.syncfusion.com/ej2/bootstrap5.3.css">
+	<script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
   <!-- Public static ticket portal assembled from the live Power Pages assets. -->
   <style>
 body .ticket-portal {
@@ -149,7 +152,7 @@ body .ticket-portal .control-stack {
 }
 
 body .ticket-portal .control-stack-filters {
-	grid-template-columns: repeat(3, minmax(0, 1fr));
+	grid-template-columns: 1.35fr repeat(3, minmax(0, 1fr));
 }
 
 body .ticket-portal .control-stack-actions {
@@ -474,6 +477,477 @@ body .ticket-portal .status {
 		font-size: 13px;
 	}
 }
+
+	body .ticket-portal.syncfusion-active .native-date-field {
+		display: none;
+	}
+
+	body .ticket-portal:not(.syncfusion-active) .control-field-date-range {
+		display: none;
+	}
+
+	body .ticket-portal #selectionInfo {
+		font-size: 13px;
+		color: #f4b2ac;
+	}
+
+	body .ticket-portal .workspace {
+		min-height: 72vh;
+		display: grid;
+		grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.95fr);
+		gap: 12px;
+		align-items: stretch;
+	}
+
+	body .ticket-portal .workspace.e-splitter {
+		display: block;
+		border: 0;
+		background: transparent;
+	}
+
+	body .ticket-portal .workspace-left,
+	body .ticket-portal .workspace-right,
+	body .ticket-portal .grid-frame,
+	body .ticket-portal .preview-panel {
+		height: 100%;
+		min-width: 0;
+	}
+
+	body .ticket-portal .grid-frame,
+	body .ticket-portal .preview-panel {
+		background: rgba(17, 17, 17, 0.94);
+		border: 1px solid var(--cf-border);
+		border-radius: 16px;
+		box-shadow: 0 14px 30px var(--cf-shadow);
+		overflow: hidden;
+		position: relative;
+	}
+
+	body .ticket-portal .ticket-grid-host,
+	body .ticket-portal .grid-fallback {
+		height: 100%;
+		min-height: 72vh;
+	}
+
+	body .ticket-portal .grid-fallback {
+		overflow: auto;
+		padding: 0;
+		background: rgba(17, 17, 17, 0.96);
+	}
+
+	body .ticket-portal .grid-state {
+		position: absolute;
+		inset: 0;
+		padding: 24px;
+		display: none;
+		align-items: center;
+		justify-content: center;
+		background: linear-gradient(180deg, rgba(16, 16, 16, 0.88), rgba(16, 16, 16, 0.76));
+		-webkit-backdrop-filter: blur(2px);
+		backdrop-filter: blur(2px);
+		z-index: 3;
+	}
+
+	body .ticket-portal .grid-state.is-visible {
+		display: flex;
+	}
+
+	body .ticket-portal .grid-state-card {
+		max-width: 440px;
+		padding: 22px 24px;
+		border-radius: 16px;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		background: linear-gradient(180deg, rgba(228, 29, 45, 0.08), rgba(1, 84, 126, 0.08));
+		text-align: center;
+		color: var(--cf-muted);
+	}
+
+	body .ticket-portal .grid-state-card strong {
+		display: block;
+		font-size: 19px;
+		color: var(--cf-ink);
+		margin-bottom: 8px;
+	}
+
+	body .ticket-portal .fallback-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 13px;
+		color: var(--cf-ink);
+		background: transparent;
+	}
+
+	body .ticket-portal .fallback-table thead th {
+		position: sticky;
+		top: 0;
+		z-index: 1;
+		padding: 12px 14px;
+		font-size: 11px;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		background: #181a1d;
+		color: #f4b2ac;
+		border-bottom: 1px solid var(--cf-border);
+		text-align: left;
+	}
+
+	body .ticket-portal .fallback-table tbody td {
+		padding: 12px 14px;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+		vertical-align: top;
+	}
+
+	body .ticket-portal .fallback-table tbody tr {
+		cursor: pointer;
+		transition: background 160ms ease;
+	}
+
+	body .ticket-portal .fallback-table tbody tr:hover,
+	body .ticket-portal .fallback-table tbody tr.is-selected {
+		background: rgba(228, 29, 45, 0.12);
+	}
+
+	body .ticket-portal .preview-panel {
+		padding: 16px;
+		display: grid;
+		grid-template-rows: auto auto minmax(240px, 1fr) auto;
+		gap: 12px;
+		background:
+			linear-gradient(180deg, rgba(228, 29, 45, 0.08), rgba(228, 29, 45, 0) 180px),
+			rgba(17, 17, 17, 0.96);
+	}
+
+	body .ticket-portal .preview-panel-topline {
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 0.09em;
+		text-transform: uppercase;
+		color: #f4b2ac;
+		margin-bottom: 4px;
+	}
+
+	body .ticket-portal .preview-headline {
+		font-size: 18px;
+		line-height: 1.3;
+		font-weight: 700;
+		color: var(--cf-ink);
+	}
+
+	body .ticket-portal .preview-actions {
+		display: flex;
+		gap: 8px;
+		flex-wrap: wrap;
+	}
+
+	body .ticket-portal .panel-link {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 38px;
+		padding: 8px 12px;
+		border-radius: 8px;
+		border: 1px solid #7d3430;
+		background: var(--cf-brand-soft);
+		color: #ffe3df;
+		text-decoration: none;
+		font-size: 13px;
+		font-weight: 600;
+	}
+
+	body .ticket-portal .panel-link.alt {
+		background: #14191d;
+		border-color: #37586a;
+		color: #b6dcf1;
+	}
+
+	body .ticket-portal .panel-link.is-disabled {
+		opacity: 0.42;
+		pointer-events: none;
+		filter: grayscale(0.35);
+	}
+
+	body .ticket-portal .preview-media {
+		position: relative;
+		border-radius: 14px;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		background: linear-gradient(180deg, #17191c, #0f1012);
+		min-height: 320px;
+		overflow: hidden;
+		display: flex;
+		align-items: stretch;
+		justify-content: center;
+	}
+
+	body .ticket-portal .preview-media img {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		background: transparent;
+		display: block;
+		position: relative;
+		z-index: 1;
+	}
+
+	body .ticket-portal .preview-empty,
+	body .ticket-portal .preview-skeleton {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 22px;
+		text-align: center;
+		color: var(--cf-muted);
+		gap: 10px;
+		background: linear-gradient(180deg, rgba(1, 84, 126, 0.06), rgba(1, 84, 126, 0));
+		transition: opacity 160ms ease;
+		pointer-events: none;
+		z-index: 2;
+	}
+
+	body .ticket-portal .preview-empty strong {
+		font-size: 17px;
+		color: var(--cf-ink);
+	}
+
+	body .ticket-portal .preview-skeleton {
+		opacity: 0;
+		visibility: hidden;
+		background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
+		align-items: stretch;
+		justify-content: flex-start;
+		gap: 10px;
+	}
+
+	body .ticket-portal .preview-skeleton.is-visible {
+		opacity: 1;
+		visibility: visible;
+	}
+
+	body .ticket-portal .preview-skeleton-fallback {
+		position: relative;
+		overflow: hidden;
+		border-radius: 10px;
+		background: rgba(255, 255, 255, 0.08);
+		animation: cfShimmer 1.2s linear infinite;
+	}
+
+	body .ticket-portal .preview-skeleton-media {
+		height: 220px;
+	}
+
+	body .ticket-portal .preview-skeleton-line {
+		height: 16px;
+		width: 100%;
+	}
+
+	body .ticket-portal .preview-skeleton-line.short {
+		width: 56%;
+	}
+
+	@keyframes cfShimmer {
+		0% { background-position: -180px 0; }
+		100% { background-position: 180px 0; }
+	}
+
+	body .ticket-portal .preview-meta {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 10px;
+		align-content: start;
+	}
+
+	body .ticket-portal .detail-item {
+		padding: 12px;
+		border-radius: 12px;
+		background: rgba(255, 255, 255, 0.04);
+		border: 1px solid rgba(255, 255, 255, 0.05);
+		min-width: 0;
+	}
+
+	body .ticket-portal .detail-item.detail-item-wide {
+		grid-column: 1 / -1;
+	}
+
+	body .ticket-portal .detail-item .v {
+		overflow-wrap: anywhere;
+	}
+
+	body .ticket-portal .toast-host,
+	body .ticket-portal .dialog-host {
+		position: relative;
+		z-index: 8;
+	}
+
+	body .ticket-portal .e-splitter,
+	body .ticket-portal .e-splitter .e-pane,
+	body .ticket-portal .e-splitter .e-split-bar,
+	body .ticket-portal .e-grid,
+	body .ticket-portal .e-grid .e-gridheader,
+	body .ticket-portal .e-grid .e-gridcontent,
+	body .ticket-portal .e-grid .e-content,
+	body .ticket-portal .e-gridpager,
+	body .ticket-portal .e-popup,
+	body .ticket-portal .e-dialog,
+	body .ticket-portal .e-toast-container .e-toast {
+		background: #121416;
+		color: var(--cf-ink);
+	}
+
+	body .ticket-portal .e-splitter .e-split-bar {
+		border-color: rgba(255, 255, 255, 0.06);
+		background: rgba(255, 255, 255, 0.03);
+	}
+
+	body .ticket-portal .e-control,
+	body .ticket-portal .e-input,
+	body .ticket-portal .e-input-group,
+	body .ticket-portal .e-input-group input,
+	body .ticket-portal .e-ddl,
+	body .ticket-portal .e-popup,
+	body .ticket-portal .e-datepicker,
+	body .ticket-portal .e-calendar,
+	body .ticket-portal .e-daterangepicker {
+		font-family: "Segoe UI", Tahoma, sans-serif;
+	}
+
+	body .ticket-portal .e-input-group,
+	body .ticket-portal .e-control-wrapper.e-input-group,
+	body .ticket-portal .e-date-range-wrapper,
+	body .ticket-portal .e-input-group:not(.e-float-icon-left):not(.e-float-input)::before,
+	body .ticket-portal .e-input-group:not(.e-float-icon-left):not(.e-float-input)::after,
+	body .ticket-portal .e-control-wrapper.e-input-group:not(.e-float-icon-left):not(.e-float-input)::before,
+	body .ticket-portal .e-control-wrapper.e-input-group:not(.e-float-icon-left):not(.e-float-input)::after {
+		background: #151515;
+		border-color: #3e434a;
+		color: var(--cf-ink);
+		border-radius: 8px;
+		box-shadow: none;
+	}
+
+	body .ticket-portal .e-input-group input.e-input,
+	body .ticket-portal .e-input-group .e-input,
+	body .ticket-portal .e-input-group-icon,
+	body .ticket-portal .e-input-group.e-control-wrapper input,
+	body .ticket-portal .e-date-range-wrapper input {
+		background: #151515;
+		color: var(--cf-ink);
+	}
+
+	body .ticket-portal .e-grid {
+		border: 0;
+		font-size: 13px;
+	}
+
+	body .ticket-portal .e-grid .e-gridheader {
+		border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+		background: #17191c;
+	}
+
+	body .ticket-portal .e-grid .e-headercell,
+	body .ticket-portal .e-grid .e-detailheadercell,
+	body .ticket-portal .e-grid .e-rowcell,
+	body .ticket-portal .e-grid .e-summarycell,
+	body .ticket-portal .e-gridpager,
+	body .ticket-portal .e-grid .e-gridcontent,
+	body .ticket-portal .e-grid .e-content {
+		border-color: rgba(255, 255, 255, 0.07);
+	}
+
+	body .ticket-portal .e-grid .e-headertext,
+	body .ticket-portal .e-grid .e-rowcell,
+	body .ticket-portal .e-grid .e-headercell,
+	body .ticket-portal .e-gridpager,
+	body .ticket-portal .e-dialog,
+	body .ticket-portal .e-toast-message {
+		color: var(--cf-ink);
+	}
+
+	body .ticket-portal .e-grid .e-row:hover .e-rowcell,
+	body .ticket-portal .e-grid .e-row.e-altrow:hover .e-rowcell {
+		background: rgba(228, 29, 45, 0.08);
+	}
+
+	body .ticket-portal .e-grid .e-selectionbackground,
+	body .ticket-portal .e-grid .e-active,
+	body .ticket-portal .e-grid .e-focused,
+	body .ticket-portal .e-grid .e-focused .e-rowcell,
+	body .ticket-portal .e-grid .e-rowcell.e-selectionbackground {
+		background: rgba(228, 29, 45, 0.16);
+		color: #fff;
+	}
+
+	body .ticket-portal .e-popup,
+	body .ticket-portal .e-dialog,
+	body .ticket-portal .e-toast-container .e-toast {
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		box-shadow: 0 16px 34px rgba(0, 0, 0, 0.35);
+	}
+
+	body .ticket-portal .e-dialog .e-dlg-header-content,
+	body .ticket-portal .e-dialog .e-footer-content {
+		background: #17191c;
+		border-color: rgba(255, 255, 255, 0.06);
+	}
+
+	body .ticket-portal .e-toast-container .e-toast.cf-toast-success {
+		background: rgba(15, 64, 44, 0.96);
+		border-color: rgba(118, 231, 177, 0.25);
+	}
+
+	body .ticket-portal .e-toast-container .e-toast.cf-toast-warning {
+		background: rgba(90, 59, 16, 0.96);
+		border-color: rgba(255, 211, 102, 0.24);
+	}
+
+	body .ticket-portal .e-toast-container .e-toast.cf-toast-error {
+		background: rgba(90, 24, 24, 0.96);
+		border-color: rgba(255, 151, 151, 0.24);
+	}
+
+	body .ticket-portal .e-toast-container .e-toast.cf-toast-info {
+		background: rgba(18, 49, 84, 0.96);
+		border-color: rgba(141, 196, 255, 0.24);
+	}
+
+	@media (max-width: 1180px) {
+		body .ticket-portal .workspace {
+			grid-template-columns: 1fr;
+		}
+
+		body .ticket-portal .workspace.e-splitter {
+			height: auto;
+		}
+
+		body .ticket-portal .ticket-grid-host,
+		body .ticket-portal .grid-fallback,
+		body .ticket-portal .grid-frame {
+			min-height: 60vh;
+		}
+	}
+
+	@media (max-width: 640px) {
+		body .ticket-portal .control-stack-filters {
+			grid-template-columns: 1fr;
+		}
+
+		body .ticket-portal .preview-panel {
+			padding: 12px;
+		}
+
+		body .ticket-portal .preview-meta {
+			grid-template-columns: 1fr;
+		}
+
+		body .ticket-portal .detail-item.detail-item-wide {
+			grid-column: auto;
+		}
+
+		body .ticket-portal .panel-link {
+			flex: 1 1 calc(50% - 8px);
+		}
+	}
   </style>
 </head>
 <body>
@@ -494,53 +968,95 @@ body .ticket-portal .status {
       </div>
     </header>
 
-    <section class="controls">
-      <div class="control-stack control-stack-search">
-        <div class="control-field control-field-search">
-          <label for="q">Search tickets</label>
-          <input id="q" type="search" placeholder="Account, customer, ticket ref, or file" />
-          <div class="control-hint">Customer searches expand to every linked account automatically.</div>
-        </div>
-      </div>
+		<section class="controls">
+			<div class="control-stack control-stack-search">
+				<div class="control-field control-field-search">
+					<label for="q">Search tickets</label>
+					<input id="q" type="search" placeholder="Account, customer, ticket ref, or file" />
+					<div class="control-hint">Auto-complete suggestions use grouped customers and indexed account numbers when Syncfusion is available.</div>
+				</div>
+			</div>
 
-      <div class="control-stack control-stack-filters">
-        <div class="control-field">
-          <label for="fromDate">From</label>
-          <input id="fromDate" type="date" aria-label="From date" title="From date" />
-        </div>
-        <div class="control-field">
-          <label for="toDate">To</label>
-          <input id="toDate" type="date" aria-label="To date" title="To date" />
-        </div>
-        <div class="control-field">
-          <label for="sortBy">Sort</label>
-          <select id="sortBy" aria-label="Sort results" title="Sort results">
-            <option value="account">Account #</option>
-            <option value="date_desc">Date: newest</option>
-            <option value="date_asc">Date: oldest</option>
-          </select>
-        </div>
-      </div>
+			<div class="control-stack control-stack-filters">
+				<div class="control-field control-field-date-range">
+					<label for="dateRange">Ticket date range</label>
+					<input id="dateRange" type="text" placeholder="All indexed dates" />
+				</div>
+				<div class="control-field native-date-field" id="nativeFromField">
+					<label for="fromDate">From</label>
+					<input id="fromDate" type="date" aria-label="From date" title="From date" />
+				</div>
+				<div class="control-field native-date-field" id="nativeToField">
+					<label for="toDate">To</label>
+					<input id="toDate" type="date" aria-label="To date" title="To date" />
+				</div>
+				<div class="control-field">
+					<label for="sortBy">Default order</label>
+					<select id="sortBy" aria-label="Default sort results" title="Default sort results">
+						<option value="account">Account #</option>
+						<option value="date_desc">Date: newest</option>
+						<option value="date_asc">Date: oldest</option>
+					</select>
+				</div>
+			</div>
 
-      <div class="control-stack control-stack-actions primary-actions">
-        <button id="applyBtn" type="button">Search</button>
-        <button id="copyLinkBtn" class="alt" type="button">Copy Link</button>
-        <button id="clearBtn" class="alt" type="button">Clear</button>
-      </div>
+			<div class="control-stack control-stack-actions primary-actions">
+				<button id="applyBtn" type="button">Search</button>
+				<button id="copyLinkBtn" class="alt" type="button">Copy Link</button>
+				<button id="clearBtn" class="alt" type="button">Clear</button>
+			</div>
 
-      <div class="control-stack control-stack-actions secondary-actions">
-        <button id="printAllBtn" type="button">Print All</button>
-        <button id="savePdfBtn" type="button">Save PDF</button>
-      </div>
-    </section>
+			<div class="control-stack control-stack-actions secondary-actions">
+				<button id="printAllBtn" type="button">Print Filtered</button>
+				<button id="savePdfBtn" type="button">Save Filtered PDF</button>
+			</div>
+		</section>
 
-    <div class="meta">
-      <div id="resultCount">Loading...</div>
-      <div id="dataState">Loading public ticket data...</div>
-      <div id="searchInfo"></div>
-    </div>
+		<div class="meta">
+			<div id="resultCount">Loading...</div>
+			<div id="dataState">Loading public ticket data...</div>
+			<div id="searchInfo"></div>
+			<div id="selectionInfo">No ticket selected</div>
+		</div>
 
-    <section id="grid" class="grid"></section>
+		<section id="workspace" class="workspace">
+			<div class="workspace-left">
+				<div class="grid-frame">
+					<div id="gridState" class="grid-state is-visible">
+						<div class="grid-state-card">
+							<strong>Loading ticket data</strong>
+							<div>The searchable archive workspace is preparing the latest indexed pages.</div>
+						</div>
+					</div>
+					<div id="gridHost" class="ticket-grid-host"></div>
+					<div id="gridFallback" class="grid-fallback" hidden></div>
+				</div>
+			</div>
+			<aside class="workspace-right">
+				<section id="previewPane" class="preview-panel">
+					<div>
+						<div class="preview-panel-topline">Selected ticket</div>
+						<div id="previewHeadline" class="preview-headline">Pick a row to inspect its preview image, source PDF, and OCR fields.</div>
+					</div>
+					<div class="preview-actions">
+						<a id="openPreviewLink" class="panel-link is-disabled" target="_blank" rel="noopener noreferrer" aria-disabled="true">Open Preview</a>
+						<a id="openPdfLink" class="panel-link alt is-disabled" target="_blank" rel="noopener noreferrer" aria-disabled="true">Open Source PDF</a>
+					</div>
+					<div id="previewMedia" class="preview-media">
+						<div id="previewSkeleton" class="preview-skeleton"></div>
+						<div id="previewEmpty" class="preview-empty">
+							<strong>Ready for ticket review</strong>
+							<div>Select a search result to inspect the page image and jump straight to the original PDF.</div>
+						</div>
+						<img id="previewImage" alt="Selected ticket preview" hidden>
+					</div>
+					<div id="previewMeta" class="preview-meta"></div>
+				</section>
+			</aside>
+		</section>
+
+		<div id="toastHost" class="toast-host"></div>
+		<div id="dialogHost" class="dialog-host"></div>
   </main>
 </div>
   <script>
@@ -558,6 +1074,15 @@ body .ticket-portal .status {
 	let searchInfoEl = null;
 	let pdfLibPromise = null;
 	const DEFAULT_COPY_BUTTON_TEXT = 'Copy Link';
+	// The portal keeps its filtering, data loading, and export logic vendor-neutral so this UI layer can be removed later.
+	const SYNCFUSION_ACTIVE = Boolean(globalThis.ej && globalThis.ej.grids && globalThis.ej.dropdowns && globalThis.ej.calendars);
+	let toastInstance = null;
+	let dialogInstance = null;
+	let gridInstance = null;
+	let splitterInstance = null;
+	let searchAutoComplete = null;
+	let dateRangePicker = null;
+	let pendingGridAutoSelection = false;
 
 	function text(value) {
 		return (value || '').toString().trim();
@@ -858,6 +1383,16 @@ body .ticket-portal .status {
 		}
 		return [
 			'<div class="row' + (isWide ? ' row-wide' : '') + '">',
+			'<div class="k">' + escapeHtml(label) + '</div>',
+			'<div class="v">' + escapeHtml(displayValue) + '</div>',
+			'</div>'
+		].join('');
+	}
+
+	function detailItemHtml(label, value, isWide) {
+		const displayValue = text(value) || '-';
+		return [
+			'<div class="detail-item' + (isWide ? ' detail-item-wide' : '') + '">',
 			'<div class="k">' + escapeHtml(label) + '</div>',
 			'<div class="v">' + escapeHtml(displayValue) + '</div>',
 			'</div>'
@@ -1336,6 +1871,55 @@ body .ticket-portal .status {
 		return 'coolman-ticket-search-' + searchFragment + '-' + dateFragment + '.pdf';
 	}
 
+	function buildRecordKey(record) {
+		return [text(record.account), text(record.source_file), text(record.page), text(record.preview_url)].join('|');
+	}
+
+	function toDateObject(value) {
+		const raw = text(value);
+		if (!isValidIsoDate(raw)) {
+			return null;
+		}
+		const parts = raw.split('-').map(Number);
+		return new Date(parts[0], parts[1] - 1, parts[2]);
+	}
+
+	function toIsoDate(value) {
+		if (!(value instanceof Date) || Number.isNaN(value.getTime())) {
+			return '';
+		}
+		return [
+			String(value.getFullYear()).padStart(4, '0'),
+			String(value.getMonth() + 1).padStart(2, '0'),
+			String(value.getDate()).padStart(2, '0')
+		].join('-');
+	}
+
+	function buildSearchSuggestions(records) {
+		const customers = customerGroups
+			.map((group) => text(group.customer))
+			.filter(Boolean);
+		const accounts = uniqueValues(records, (record) => record.account)
+			.map((account) => 'Account ' + account);
+		return uniqueValues(customers.concat(accounts), (value) => value);
+	}
+
+	function buildGridRows(records) {
+		return records.map((record) => ({
+			grid_key: buildRecordKey(record),
+			account: collapseDisplayText(record.account) || '-',
+			customer: cleanCustomerValue(record.customer, record.delivery_address) || 'Unknown',
+			ticket_date: bestTicketDate(record) || '-',
+			ticket_ref: cleanTicketRefValue(record.ticket_ref) || '-',
+			fuel_type: collapseDisplayText(record.fuel_type) || '-',
+			litres: collapseDisplayText(record.litres) || '-',
+			source_file: collapseDisplayText(record.source_file) || '-',
+			page_label: text(record.page) ? 'p.' + text(record.page) : '-',
+			delivery_address: cleanAddressValue(record.delivery_address) || '-',
+			record_ref: record
+		}));
+	}
+
 	async function downloadBatchPdf(records, queryText, onProgress) {
 		const pages = printableRecords(records);
 		if (!pages.length) {
@@ -1381,17 +1965,25 @@ body .ticket-portal .status {
 		return { savedCount, failures };
 	}
 
-	function printBatch(records) {
+	function printBatch(records, onNotice) {
 		const pages = printableRecords(records);
 		if (!pages.length) {
-			window.alert('No printable ticket pages are available for this search.');
-			return;
+			if (typeof onNotice === 'function') {
+				onNotice('warning', 'No printable ticket pages are available for this search.');
+			} else {
+				globalThis.alert('No printable ticket pages are available for this search.');
+			}
+			return false;
 		}
 
-		const printWindow = window.open('', '_blank');
+		const printWindow = globalThis.open('', '_blank');
 		if (!printWindow) {
-			window.alert('Allow pop-ups for this site to use Print All.');
-			return;
+			if (typeof onNotice === 'function') {
+				onNotice('error', 'Allow pop-ups for this site to use Print Filtered.');
+			} else {
+				globalThis.alert('Allow pop-ups for this site to use Print Filtered.');
+			}
+			return false;
 		}
 
 		const sheets = pages.map((record, index) => {
@@ -1431,14 +2023,32 @@ body .ticket-portal .status {
 			'</body></html>'
 		].join(''));
 		printWindow.document.close();
+		return true;
 	}
 
 	function attachBehavior() {
-		const gridEl = document.getElementById('grid');
+		const portalEl = document.querySelector('.ticket-portal');
+		const workspaceEl = document.getElementById('workspace');
+		const gridHostEl = document.getElementById('gridHost');
+		const gridFallbackEl = document.getElementById('gridFallback');
+		const gridStateEl = document.getElementById('gridState');
 		const countEl = document.getElementById('resultCount');
 		const stateEl = document.getElementById('dataState');
+		const selectionInfoEl = document.getElementById('selectionInfo');
 		searchInfoEl = document.getElementById('searchInfo');
+		const previewPaneEl = document.getElementById('previewPane');
+		const previewHeadlineEl = document.getElementById('previewHeadline');
+		const previewMediaEl = document.getElementById('previewMedia');
+		const previewSkeletonEl = document.getElementById('previewSkeleton');
+		const previewEmptyEl = document.getElementById('previewEmpty');
+		const previewImageEl = document.getElementById('previewImage');
+		const previewMetaEl = document.getElementById('previewMeta');
+		const openPreviewLinkEl = document.getElementById('openPreviewLink');
+		const openPdfLinkEl = document.getElementById('openPdfLink');
+		const toastHostEl = document.getElementById('toastHost');
+		const dialogHostEl = document.getElementById('dialogHost');
 		const qEl = document.getElementById('q');
+		const dateRangeEl = document.getElementById('dateRange');
 		const fromEl = document.getElementById('fromDate');
 		const toEl = document.getElementById('toDate');
 		const sortEl = document.getElementById('sortBy');
@@ -1448,27 +2058,414 @@ body .ticket-portal .status {
 		const savePdfBtn = document.getElementById('savePdfBtn');
 		const clearBtn = document.getElementById('clearBtn');
 
-		if (!gridEl || !countEl || !stateEl || !qEl || !fromEl || !toEl || !sortEl || !applyBtn || !copyLinkBtn || !printAllBtn || !savePdfBtn || !clearBtn) {
+		if (!portalEl || !workspaceEl || !gridHostEl || !gridFallbackEl || !gridStateEl || !countEl || !stateEl || !selectionInfoEl || !searchInfoEl || !previewPaneEl || !previewHeadlineEl || !previewMediaEl || !previewSkeletonEl || !previewEmptyEl || !previewImageEl || !previewMetaEl || !openPreviewLinkEl || !openPdfLinkEl || !toastHostEl || !dialogHostEl || !qEl || !dateRangeEl || !fromEl || !toEl || !sortEl || !applyBtn || !copyLinkBtn || !printAllBtn || !savePdfBtn || !clearBtn) {
 			return;
 		}
 
 		let data = [];
 		let lastFiltered = [];
+		let fallbackRows = [];
+		let activeRecord = null;
+		let confirmResolver = null;
+
+		function notify(kind, title, content) {
+			const messageTitle = text(title) || 'Ticket portal';
+			const messageContent = text(content) || messageTitle;
+			if (toastInstance && typeof toastInstance.show === 'function') {
+				toastInstance.show({
+					title: messageTitle,
+					content: messageContent,
+					cssClass: 'cf-toast cf-toast-' + (kind || 'info'),
+					timeOut: kind === 'error' ? 5400 : 2800,
+					showCloseButton: true
+				});
+				return;
+			}
+			stateEl.textContent = messageContent;
+			if (kind === 'error' && globalThis.console && typeof globalThis.console.error === 'function') {
+				globalThis.console.error(messageContent);
+			}
+		}
+
+		function setLinkState(linkEl, href) {
+			const safeHref = text(href);
+			if (!safeHref) {
+				linkEl.classList.add('is-disabled');
+				linkEl.setAttribute('aria-disabled', 'true');
+				linkEl.removeAttribute('href');
+				return;
+			}
+			linkEl.classList.remove('is-disabled');
+			linkEl.setAttribute('aria-disabled', 'false');
+			linkEl.setAttribute('href', safeHref);
+		}
+
+		function showGridState(title, message) {
+			gridStateEl.innerHTML = [
+				'<div class="grid-state-card">',
+				'<strong>' + escapeHtml(title) + '</strong>',
+				'<div>' + escapeHtml(message) + '</div>',
+				'</div>'
+			].join('');
+			gridStateEl.classList.add('is-visible');
+		}
+
+		function hideGridState() {
+			gridStateEl.classList.remove('is-visible');
+		}
+
+		function ensurePreviewSkeleton() {
+			if (previewSkeletonEl.dataset.ready === 'true') {
+				return;
+			}
+			previewSkeletonEl.dataset.ready = 'true';
+			previewSkeletonEl.innerHTML = '';
+
+			const skeletonDefinitions = [
+				{ className: 'preview-skeleton-media', shape: 'Rectangle', width: '100%', height: '220px' },
+				{ className: 'preview-skeleton-line', shape: 'Text', width: '78%', height: '18px' },
+				{ className: 'preview-skeleton-line short', shape: 'Text', width: '56%', height: '18px' }
+			];
+
+			skeletonDefinitions.forEach((definition) => {
+				const block = document.createElement('div');
+				block.className = definition.className + ' preview-skeleton-fallback';
+				previewSkeletonEl.appendChild(block);
+				if (!SYNCFUSION_ACTIVE || !globalThis.ej.notifications || !globalThis.ej.notifications.Skeleton) {
+					return;
+				}
+				try {
+					new globalThis.ej.notifications.Skeleton({
+						shape: definition.shape,
+						width: definition.width,
+						height: definition.height,
+						shimmerEffect: 'Wave'
+					}).appendTo(block);
+					block.classList.remove('preview-skeleton-fallback');
+				} catch (error) {
+					if (globalThis.console && typeof globalThis.console.warn === 'function') {
+						globalThis.console.warn('Preview skeleton fallback active.', error);
+					}
+				}
+			});
+		}
+
+		function setPreviewLoading(isLoading) {
+			previewMediaEl.classList.toggle('is-loading', isLoading);
+			previewSkeletonEl.classList.toggle('is-visible', isLoading);
+		}
+
+		function setPreviewEmpty(title, message) {
+			previewEmptyEl.hidden = false;
+			previewEmptyEl.innerHTML = [
+				'<strong>' + escapeHtml(title) + '</strong>',
+				'<div>' + escapeHtml(message) + '</div>'
+			].join('');
+			previewImageEl.hidden = true;
+			previewImageEl.removeAttribute('src');
+			setPreviewLoading(false);
+		}
+
+		function setActiveRecord(record) {
+			activeRecord = record || null;
+			if (!activeRecord) {
+				selectionInfoEl.textContent = 'No ticket selected';
+				previewHeadlineEl.textContent = 'Pick a row to inspect its preview image, source PDF, and OCR fields.';
+				previewMetaEl.innerHTML = '';
+				previewPaneEl.classList.remove('has-record');
+				setLinkState(openPreviewLinkEl, '');
+				setLinkState(openPdfLinkEl, '');
+				setPreviewEmpty('Ready for ticket review', 'Select a search result to inspect the page image and jump straight to the original PDF.');
+				return;
+			}
+
+			const account = collapseDisplayText(activeRecord.account) || '-';
+			const customer = cleanCustomerValue(activeRecord.customer, activeRecord.delivery_address) || 'Unknown';
+			const ticketDate = bestTicketDate(activeRecord) || '-';
+			const ticketRef = cleanTicketRefValue(activeRecord.ticket_ref) || '-';
+			const address = cleanAddressValue(activeRecord.delivery_address) || '-';
+			const fileAndPage = collapseDisplayText(text(activeRecord.source_file) + (text(activeRecord.page) ? ' / p.' + text(activeRecord.page) : '')) || '-';
+
+			selectionInfoEl.textContent = 'Selected: ' + account + ' | ' + customer;
+			previewHeadlineEl.textContent = customer + ' | ' + account;
+			previewMetaEl.innerHTML = [
+				detailItemHtml('Ticket Date', ticketDate, false),
+				detailItemHtml('Ticket Ref', ticketRef, false),
+				detailItemHtml('Fuel', collapseDisplayText(activeRecord.fuel_type) || '-', false),
+				detailItemHtml('Litres', collapseDisplayText(activeRecord.litres) || '-', false),
+				detailItemHtml('File / Page', fileAndPage, true),
+				detailItemHtml('Address', address, true)
+			].join('');
+			previewPaneEl.classList.add('has-record');
+			setLinkState(openPreviewLinkEl, activeRecord.page_url);
+			setLinkState(openPdfLinkEl, activeRecord.pdf_url);
+
+			if (!text(activeRecord.preview_url)) {
+				setPreviewEmpty('Preview unavailable', 'This ticket does not currently include a generated preview image.');
+				return;
+			}
+
+			ensurePreviewSkeleton();
+			setPreviewLoading(true);
+			previewEmptyEl.hidden = true;
+			previewImageEl.hidden = true;
+			const recordKey = buildRecordKey(activeRecord);
+			previewImageEl.dataset.recordKey = recordKey;
+			previewImageEl.onload = () => {
+				if (previewImageEl.dataset.recordKey !== recordKey) {
+					return;
+				}
+				previewImageEl.hidden = false;
+				setPreviewLoading(false);
+			};
+			previewImageEl.onerror = () => {
+				if (previewImageEl.dataset.recordKey !== recordKey) {
+					return;
+				}
+				setPreviewEmpty('Preview unavailable', 'The preview image could not be loaded from static storage.');
+			};
+			previewImageEl.src = activeRecord.preview_url;
+		}
+
+		function renderFallbackGrid(rows) {
+			fallbackRows = rows.slice();
+			if (!rows.length) {
+				gridFallbackEl.innerHTML = '';
+				return;
+			}
+			gridFallbackEl.innerHTML = [
+				'<table class="fallback-table">',
+				'<thead><tr><th>Account</th><th>Customer</th><th>Ticket Date</th><th>Ticket Ref</th><th>Source File</th><th>Page</th></tr></thead>',
+				'<tbody>',
+				rows.map((row) => [
+					'<tr data-record-key="' + escapeHtml(row.grid_key) + '">',
+					'<td>' + escapeHtml(row.account) + '</td>',
+					'<td>' + escapeHtml(row.customer) + '</td>',
+					'<td>' + escapeHtml(row.ticket_date) + '</td>',
+					'<td>' + escapeHtml(row.ticket_ref) + '</td>',
+					'<td>' + escapeHtml(row.source_file) + '</td>',
+					'<td>' + escapeHtml(row.page_label) + '</td>',
+					'</tr>'
+				].join('')).join(''),
+				'</tbody>',
+				'</table>'
+			].join('');
+		}
+
+		function updateBatchButtons(records) {
+			const hasPrintableRecords = printableRecords(records).length > 0;
+			printAllBtn.disabled = !hasPrintableRecords;
+			savePdfBtn.disabled = !hasPrintableRecords;
+		}
+
+		function applyGridRows(rows) {
+			if (SYNCFUSION_ACTIVE && gridInstance) {
+				gridHostEl.hidden = false;
+				gridFallbackEl.hidden = true;
+				pendingGridAutoSelection = rows.length > 0;
+				gridInstance.dataSource = rows;
+				if (gridInstance.allowPaging && typeof gridInstance.goToPage === 'function') {
+					gridInstance.goToPage(1);
+				}
+				gridInstance.refresh();
+				if (!rows.length) {
+					setActiveRecord(null);
+				}
+				return;
+			}
+
+			gridHostEl.hidden = true;
+			gridFallbackEl.hidden = false;
+			renderFallbackGrid(rows);
+			if (rows.length) {
+				setActiveRecord(rows[0].record_ref);
+				const firstRow = gridFallbackEl.querySelector('tbody tr');
+				if (firstRow) {
+					firstRow.classList.add('is-selected');
+				}
+			} else {
+				setActiveRecord(null);
+			}
+		}
+
+		function syncDateRangeFromHiddenInputs() {
+			if (!dateRangePicker) {
+				return;
+			}
+			dateRangePicker.startDate = toDateObject(fromEl.value);
+			dateRangePicker.endDate = toDateObject(toEl.value);
+			dateRangePicker.dataBind();
+		}
+
+		function setHiddenDateRange(startDate, endDate) {
+			fromEl.value = startDate ? toIsoDate(startDate) : '';
+			toEl.value = endDate ? toIsoDate(endDate) : '';
+		}
+
+		function openConfirmDialog(title, content, confirmText) {
+			if (!dialogInstance) {
+				const strippedContent = text(content).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+				return Promise.resolve(globalThis.confirm(title + '\n\n' + strippedContent));
+			}
+
+			return new Promise((resolve) => {
+				const finish = (value) => {
+					if (!confirmResolver) {
+						return;
+					}
+					const currentResolver = confirmResolver;
+					confirmResolver = null;
+					dialogInstance.hide();
+					currentResolver(value);
+				};
+
+				confirmResolver = resolve;
+				dialogInstance.header = title;
+				dialogInstance.content = content;
+				dialogInstance.buttons = [
+					{
+						buttonModel: { content: 'Cancel' },
+						click: () => finish(false)
+					},
+					{
+						buttonModel: { content: confirmText || 'Continue', isPrimary: true },
+						click: () => finish(true)
+					}
+				];
+				dialogInstance.dataBind();
+				dialogInstance.show();
+			});
+		}
+
+		function mountSyncfusionUi() {
+			portalEl.classList.toggle('syncfusion-active', SYNCFUSION_ACTIVE);
+
+			if (!SYNCFUSION_ACTIVE) {
+				ensurePreviewSkeleton();
+				return;
+			}
+
+			if (!toastInstance && globalThis.ej.notifications && globalThis.ej.notifications.Toast) {
+				toastInstance = new globalThis.ej.notifications.Toast({
+					position: { X: 'Right', Y: 'Top' },
+					newestOnTop: true,
+					timeOut: 2800,
+					showProgressBar: true
+				});
+				toastInstance.appendTo(toastHostEl);
+			}
+
+			if (!dialogInstance && globalThis.ej.popups && globalThis.ej.popups.Dialog) {
+				dialogInstance = new globalThis.ej.popups.Dialog({
+					visible: false,
+					isModal: true,
+					showCloseIcon: true,
+					closeOnEscape: true,
+					width: '420px',
+					close: () => {
+						if (!confirmResolver) {
+							return;
+						}
+						const currentResolver = confirmResolver;
+						confirmResolver = null;
+						currentResolver(false);
+					}
+				});
+				dialogInstance.appendTo(dialogHostEl);
+			}
+
+			if (!searchAutoComplete && globalThis.ej.dropdowns && globalThis.ej.dropdowns.AutoComplete) {
+				searchAutoComplete = new globalThis.ej.dropdowns.AutoComplete({
+					allowCustom: true,
+					highlight: true,
+					ignoreAccent: true,
+					popupHeight: '320px',
+					placeholder: qEl.getAttribute('placeholder') || 'Search tickets',
+					change: () => render()
+				});
+				searchAutoComplete.appendTo(qEl);
+			}
+
+			if (!dateRangePicker && globalThis.ej.calendars && globalThis.ej.calendars.DateRangePicker) {
+				dateRangePicker = new globalThis.ej.calendars.DateRangePicker({
+					format: 'yyyy-MM-dd',
+					separator: ' to ',
+					placeholder: 'All indexed dates',
+					change: (args) => {
+						setHiddenDateRange(args.startDate, args.endDate);
+						render();
+					}
+				});
+				dateRangePicker.appendTo(dateRangeEl);
+				syncDateRangeFromHiddenInputs();
+			}
+
+			if (!splitterInstance && globalThis.ej.layouts && globalThis.ej.layouts.Splitter && globalThis.innerWidth > 1180) {
+				splitterInstance = new globalThis.ej.layouts.Splitter({
+					height: '72vh',
+					width: '100%',
+					paneSettings: [
+						{ size: '60%', min: '420px' },
+						{ size: '40%', min: '320px' }
+					],
+					separatorSize: 6
+				});
+				splitterInstance.appendTo(workspaceEl);
+			}
+
+			ensurePreviewSkeleton();
+
+			if (!gridInstance && globalThis.ej.grids && globalThis.ej.grids.Grid) {
+				globalThis.ej.grids.Grid.Inject(globalThis.ej.grids.Page, globalThis.ej.grids.Sort, globalThis.ej.grids.Filter, globalThis.ej.grids.Resize);
+				gridInstance = new globalThis.ej.grids.Grid({
+					dataSource: [],
+					height: '100%',
+					allowPaging: true,
+					pageSettings: { pageSize: 25, pageSizes: [25, 50, 100, 250] },
+					allowSorting: true,
+					allowFiltering: true,
+					allowResizing: true,
+					enableVirtualization: true,
+					frozenColumns: 2,
+					selectionSettings: { type: 'Single', mode: 'Row' },
+					filterSettings: { type: 'Menu' },
+					gridLines: 'Both',
+					dataBound: () => {
+						if (!pendingGridAutoSelection || !gridInstance || !gridInstance.currentViewData || !gridInstance.currentViewData.length) {
+							return;
+						}
+						pendingGridAutoSelection = false;
+						globalThis.requestAnimationFrame(() => gridInstance.selectRow(0));
+					},
+					rowSelected: (args) => {
+						if (args && args.data && args.data.record_ref) {
+							setActiveRecord(args.data.record_ref);
+						}
+					},
+					columns: [
+						{ field: 'account', headerText: 'Account', width: 118, clipMode: 'EllipsisWithTooltip' },
+						{ field: 'customer', headerText: 'Customer', width: 220, clipMode: 'EllipsisWithTooltip' },
+						{ field: 'ticket_date', headerText: 'Ticket Date', width: 120 },
+						{ field: 'ticket_ref', headerText: 'Ticket Ref', width: 132, clipMode: 'EllipsisWithTooltip' },
+						{ field: 'fuel_type', headerText: 'Fuel', width: 96 },
+						{ field: 'litres', headerText: 'Litres', width: 92, textAlign: 'Right' },
+						{ field: 'source_file', headerText: 'Source File', width: 220, clipMode: 'EllipsisWithTooltip' },
+						{ field: 'page_label', headerText: 'Page', width: 78, textAlign: 'Right' },
+						{ field: 'delivery_address', headerText: 'Address', width: 240, clipMode: 'EllipsisWithTooltip' }
+					]
+				});
+				gridInstance.appendTo(gridHostEl);
+			}
+		}
 
 		function renderEmptyState() {
 			lastFiltered = [];
-			printAllBtn.disabled = true;
-			savePdfBtn.disabled = true;
+			updateBatchButtons([]);
 			countEl.textContent = data.length + ' ticket page' + (data.length === 1 ? '' : 's') + ' indexed';
-			searchInfoEl.textContent = 'Enter an account, customer, ticket ref, or a date range to start searching.';
-			gridEl.innerHTML = [
-				'<article class="card">',
-				'<div class="info empty-state">',
-				'<strong>Ready for fast cabinet lookup</strong>',
-				'<div>Use the search box or date filters before loading ticket previews. This keeps the QR page fast on phones and shared devices.</div>',
-				'</div>',
-				'</article>'
-			].join('');
+			searchInfoEl.textContent = 'Use the search box, customer suggestions, or a ticket date range to start loading rows.';
+			showGridState('Ready for indexed lookup', 'Use search, auto-complete, or a date range before loading rows into the workspace.');
+			applyGridRows([]);
+			setActiveRecord(null);
 		}
 
 		async function copyCurrentLink() {
@@ -1476,9 +2473,11 @@ body .ticket-portal .status {
 			try {
 				await navigator.clipboard.writeText(window.location.href);
 				copyLinkBtn.textContent = 'Link Copied';
+				notify('success', 'Link copied', 'The current search URL is ready to share.');
 			} catch (error) {
 				console.warn('Copy link failed', error);
 				copyLinkBtn.textContent = 'Copy Failed';
+				notify('error', 'Copy failed', 'The browser blocked clipboard access for this page.');
 			}
 			window.setTimeout(() => {
 				copyLinkBtn.textContent = DEFAULT_COPY_BUTTON_TEXT;
@@ -1521,21 +2520,25 @@ body .ticket-portal .status {
 					|| (parseInt(text(a.page), 10) || 0) - (parseInt(text(b.page), 10) || 0);
 			});
 			lastFiltered = filtered;
-			const hasPrintableRecords = printableRecords(filtered).length > 0;
-			printAllBtn.disabled = !hasPrintableRecords;
-			savePdfBtn.disabled = !hasPrintableRecords;
+			updateBatchButtons(filtered);
 			const uniqueAccounts = new Set(filtered.map((record) => text(record.account)).filter(Boolean));
 			countEl.textContent = filtered.length + ' result' + (filtered.length === 1 ? '' : 's') + (filtered.length ? ' across ' + uniqueAccounts.size + ' account' + (uniqueAccounts.size === 1 ? '' : 's') : '');
 			updateSearchInfo(searchContext, filtered);
 			if (!filtered.length) {
-				gridEl.innerHTML = '<article class="card"><div class="info"><div class="v">No tickets match these filters.</div></div></article>';
+				showGridState('No matching tickets', 'Try a shorter customer search, another account number, or a wider date range.');
+				applyGridRows([]);
+				setActiveRecord(null);
 				return;
 			}
-			gridEl.innerHTML = filtered.map(cardHtml).join('');
+			hideGridState();
+			applyGridRows(buildGridRows(filtered));
+			setActiveRecord(filtered[0]);
 		}
 
 		loadStateFromUrl(qEl, fromEl, toEl, sortEl);
+		mountSyncfusionUi();
 		renderEmptyState();
+
 		async function init() {
 			try {
 				stateEl.textContent = 'Loading ticket data...';
@@ -1547,13 +2550,21 @@ body .ticket-portal .status {
 					data = await loadAllRows();
 					stateEl.textContent = 'Dataverse source: ' + ENTITY_SET + ' | Loaded rows: ' + data.length;
 				}
+				if (searchAutoComplete) {
+					searchAutoComplete.dataSource = buildSearchSuggestions(data);
+					searchAutoComplete.dataBind();
+				}
+				syncDateRangeFromHiddenInputs();
 				render();
 			} catch (error) {
 				console.error(error);
 				const errorText = explainError(error);
 				countEl.textContent = 'Failed to load ticket data';
 				stateEl.textContent = 'Power Pages could not load ticket data: ' + errorText;
-				gridEl.innerHTML = [
+				showGridState('Ticket data failed to load', 'Static JSON and Dataverse were both unavailable for this page.');
+				gridFallbackEl.hidden = true;
+				gridHostEl.hidden = false;
+				gridHostEl.innerHTML = [
 					'<article class="card"><div class="info">',
 					'<div class="v">Dataverse data could not be loaded.</div>',
 					'<div class="row"><div class="k">Static Data URL</div><div class="v">' + escapeHtml(STATIC_DATA_URL) + '</div></div>',
@@ -1569,36 +2580,74 @@ body .ticket-portal .status {
 			}
 		}
 
-		applyBtn.addEventListener('click', render);
-		copyLinkBtn.addEventListener('click', copyCurrentLink);
-		printAllBtn.addEventListener('click', () => printBatch(lastFiltered));
-		savePdfBtn.addEventListener('click', async () => {
+		async function handleBatchAction(mode) {
+			const batchRecords = lastFiltered.slice();
+			const pages = printableRecords(batchRecords);
+			if (!pages.length) {
+				notify('warning', 'Nothing to export', 'The current search does not include printable preview pages yet.');
+				return;
+			}
+
+			const uniqueAccounts = new Set(batchRecords.map((record) => text(record.account)).filter(Boolean)).size;
+			const confirmed = await openConfirmDialog(
+				mode === 'print' ? 'Print filtered tickets' : 'Save filtered tickets',
+				'<div>' + pages.length + ' ticket page' + (pages.length === 1 ? '' : 's') + ' across ' + uniqueAccounts + ' account' + (uniqueAccounts === 1 ? '' : 's') + ' will be used.</div><div style="margin-top:8px;color:#9fb0c0;">Batch actions use the current search and date range result set.</div>',
+				mode === 'print' ? 'Open print window' : 'Generate PDF'
+			);
+			if (!confirmed) {
+				return;
+			}
+
+			if (mode === 'print') {
+				const opened = printBatch(batchRecords, (kind, message) => notify(kind, 'Print filtered tickets', message));
+				if (opened) {
+					notify('success', 'Print window opened', 'The filtered ticket batch opened in a separate window.');
+				}
+				return;
+			}
+
 			const defaultStateText = stateEl.textContent;
 			const defaultButtonText = savePdfBtn.textContent;
 			savePdfBtn.disabled = true;
 			savePdfBtn.textContent = 'Saving PDF...';
 
 			try {
-				const result = await downloadBatchPdf(lastFiltered, qEl.value, (current, total, record) => {
+				const result = await downloadBatchPdf(batchRecords, qEl.value, (current, total, record) => {
 					stateEl.textContent = 'Generating PDF: ' + current + ' of ' + total + ' | ' + (text(record.account) || text(record.customer) || 'ticket image');
 				});
 				stateEl.textContent = defaultStateText;
 				if (result.failures.length) {
-					window.alert('PDF saved with ' + result.savedCount + ' page' + (result.savedCount === 1 ? '' : 's') + '. Skipped ' + result.failures.length + ' ticket image' + (result.failures.length === 1 ? '' : 's') + ' that could not be loaded.');
+					notify('warning', 'PDF saved with skips', 'Saved ' + result.savedCount + ' page' + (result.savedCount === 1 ? '' : 's') + ' and skipped ' + result.failures.length + ' preview image' + (result.failures.length === 1 ? '' : 's') + '.');
+				} else {
+					notify('success', 'PDF saved', 'The filtered ticket batch PDF was generated successfully.');
 				}
 			} catch (error) {
 				console.error(error);
 				stateEl.textContent = defaultStateText;
-				window.alert('Could not save the current search as a PDF: ' + explainError(error));
+				notify('error', 'PDF export failed', 'Could not save the filtered batch: ' + explainError(error));
 			} finally {
 				savePdfBtn.textContent = defaultButtonText;
-				savePdfBtn.disabled = printableRecords(lastFiltered).length === 0;
+				updateBatchButtons(lastFiltered);
 			}
-		});
+		}
+
+		applyBtn.addEventListener('click', render);
+		copyLinkBtn.addEventListener('click', copyCurrentLink);
+		printAllBtn.addEventListener('click', () => handleBatchAction('print'));
+		savePdfBtn.addEventListener('click', () => handleBatchAction('pdf'));
 		clearBtn.addEventListener('click', () => {
 			qEl.value = '';
+			if (searchAutoComplete) {
+				searchAutoComplete.value = '';
+			}
 			fromEl.value = '';
 			toEl.value = '';
+			if (dateRangePicker) {
+				dateRangePicker.value = null;
+				dateRangePicker.startDate = null;
+				dateRangePicker.endDate = null;
+				dateRangePicker.dataBind();
+			}
 			sortEl.value = 'account';
 			render();
 		});
@@ -1611,6 +2660,20 @@ body .ticket-portal .status {
 		fromEl.addEventListener('change', render);
 		toEl.addEventListener('change', render);
 		sortEl.addEventListener('change', render);
+		gridFallbackEl.addEventListener('click', (event) => {
+			const rowEl = event.target.closest('tr[data-record-key]');
+			if (!rowEl) {
+				return;
+			}
+			const recordKey = rowEl.getAttribute('data-record-key');
+			const matchedRow = fallbackRows.find((row) => row.grid_key === recordKey);
+			if (!matchedRow) {
+				return;
+			}
+			Array.from(gridFallbackEl.querySelectorAll('tbody tr.is-selected')).forEach((tableRow) => tableRow.classList.remove('is-selected'));
+			rowEl.classList.add('is-selected');
+			setActiveRecord(matchedRow.record_ref);
+		});
 		init();
 	}
 
