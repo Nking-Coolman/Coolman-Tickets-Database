@@ -152,7 +152,7 @@ body .ticket-portal .control-stack {
 }
 
 body .ticket-portal .control-stack-filters {
-	grid-template-columns: 1.35fr repeat(3, minmax(0, 1fr));
+	grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 body .ticket-portal .control-stack-actions {
@@ -478,11 +478,11 @@ body .ticket-portal .status {
 	}
 }
 
-	body .ticket-portal.syncfusion-active .native-date-field {
+	body .ticket-portal.syncfusion-active .native-date-input {
 		display: none;
 	}
 
-	body .ticket-portal:not(.syncfusion-active) .control-field-date-range {
+	body .ticket-portal:not(.syncfusion-active) .calendar-date-input {
 		display: none;
 	}
 
@@ -1077,17 +1077,15 @@ body .ticket-portal .panel-button.alt {
 			</div>
 
 			<div class="control-stack control-stack-filters">
-				<div class="control-field control-field-date-range">
-					<label for="dateRange">Ticket date range</label>
-					<input id="dateRange" type="text" placeholder="All indexed dates" />
+				<div class="control-field">
+					<label for="fromDatePicker">Start date</label>
+					<input id="fromDatePicker" class="calendar-date-input" type="text" placeholder="Select start date" />
+					<input id="fromDate" class="native-date-input" type="date" aria-label="Start date" title="Start date" />
 				</div>
-				<div class="control-field native-date-field" id="nativeFromField">
-					<label for="fromDate">From</label>
-					<input id="fromDate" type="date" aria-label="From date" title="From date" />
-				</div>
-				<div class="control-field native-date-field" id="nativeToField">
-					<label for="toDate">To</label>
-					<input id="toDate" type="date" aria-label="To date" title="To date" />
+				<div class="control-field">
+					<label for="toDatePicker">End date</label>
+					<input id="toDatePicker" class="calendar-date-input" type="text" placeholder="Select end date" />
+					<input id="toDate" class="native-date-input" type="date" aria-label="End date" title="End date" />
 				</div>
 				<div class="control-field">
 					<label for="sortBy">Default order</label>
@@ -1186,7 +1184,8 @@ body .ticket-portal .panel-button.alt {
 	let dialogInstance = null;
 	let gridInstance = null;
 	let searchAutoComplete = null;
-	let dateRangePicker = null;
+	let fromDatePicker = null;
+	let toDatePicker = null;
 	let pendingGridAutoSelection = false;
 
 	function text(value) {
@@ -2174,7 +2173,8 @@ body .ticket-portal .panel-button.alt {
 		const toastHostEl = document.getElementById('toastHost');
 		const dialogHostEl = document.getElementById('dialogHost');
 		const qEl = document.getElementById('q');
-		const dateRangeEl = document.getElementById('dateRange');
+		const fromDatePickerEl = document.getElementById('fromDatePicker');
+		const toDatePickerEl = document.getElementById('toDatePicker');
 		const fromEl = document.getElementById('fromDate');
 		const toEl = document.getElementById('toDate');
 		const sortEl = document.getElementById('sortBy');
@@ -2184,7 +2184,7 @@ body .ticket-portal .panel-button.alt {
 		const savePdfBtn = document.getElementById('savePdfBtn');
 		const clearBtn = document.getElementById('clearBtn');
 
-		if (!portalEl || !workspaceEl || !gridHostEl || !gridFallbackEl || !gridStateEl || !countEl || !stateEl || !selectionInfoEl || !searchInfoEl || !previewPaneEl || !previewHeadlineEl || !previewMediaEl || !previewSkeletonEl || !previewEmptyEl || !previewImageEl || !previewMetaEl || !openPreviewLinkEl || !openPdfLinkEl || !toggleDetailsBtn || !workspaceDividerEl || !toastHostEl || !dialogHostEl || !qEl || !dateRangeEl || !fromEl || !toEl || !sortEl || !applyBtn || !copyLinkBtn || !printAllBtn || !savePdfBtn || !clearBtn) {
+		if (!portalEl || !workspaceEl || !gridHostEl || !gridFallbackEl || !gridStateEl || !countEl || !stateEl || !selectionInfoEl || !searchInfoEl || !previewPaneEl || !previewHeadlineEl || !previewMediaEl || !previewSkeletonEl || !previewEmptyEl || !previewImageEl || !previewMetaEl || !openPreviewLinkEl || !openPdfLinkEl || !toggleDetailsBtn || !workspaceDividerEl || !toastHostEl || !dialogHostEl || !qEl || !fromDatePickerEl || !toDatePickerEl || !fromEl || !toEl || !sortEl || !applyBtn || !copyLinkBtn || !printAllBtn || !savePdfBtn || !clearBtn) {
 			return;
 		}
 
@@ -2555,18 +2555,15 @@ body .ticket-portal .panel-button.alt {
 			}
 		}
 
-		function syncDateRangeFromHiddenInputs() {
-			if (!dateRangePicker) {
-				return;
+		function syncCalendarDatePickers() {
+			if (fromDatePicker) {
+				fromDatePicker.value = toDateObject(fromEl.value);
+				fromDatePicker.dataBind();
 			}
-			dateRangePicker.startDate = toDateObject(fromEl.value);
-			dateRangePicker.endDate = toDateObject(toEl.value);
-			dateRangePicker.dataBind();
-		}
-
-		function setHiddenDateRange(startDate, endDate) {
-			fromEl.value = startDate ? toIsoDate(startDate) : '';
-			toEl.value = endDate ? toIsoDate(endDate) : '';
+			if (toDatePicker) {
+				toDatePicker.value = toDateObject(toEl.value);
+				toDatePicker.dataBind();
+			}
 		}
 
 		function openConfirmDialog(title, content, confirmText) {
@@ -2653,19 +2650,32 @@ body .ticket-portal .panel-button.alt {
 				searchAutoComplete.appendTo(qEl);
 			}
 
-			if (!dateRangePicker && globalThis.ej.calendars && globalThis.ej.calendars.DateRangePicker) {
-				dateRangePicker = new globalThis.ej.calendars.DateRangePicker({
+			if (!fromDatePicker && globalThis.ej.calendars && globalThis.ej.calendars.DatePicker) {
+				fromDatePicker = new globalThis.ej.calendars.DatePicker({
 					format: 'yyyy-MM-dd',
-					separator: ' to ',
-					placeholder: 'All indexed dates',
+					placeholder: 'Select start date',
+					showClearButton: true,
 					change: (args) => {
-						setHiddenDateRange(args.startDate, args.endDate);
+						fromEl.value = args.value ? toIsoDate(args.value) : '';
 						render();
 					}
 				});
-				dateRangePicker.appendTo(dateRangeEl);
-				syncDateRangeFromHiddenInputs();
+				fromDatePicker.appendTo(fromDatePickerEl);
 			}
+
+			if (!toDatePicker && globalThis.ej.calendars && globalThis.ej.calendars.DatePicker) {
+				toDatePicker = new globalThis.ej.calendars.DatePicker({
+					format: 'yyyy-MM-dd',
+					placeholder: 'Select end date',
+					showClearButton: true,
+					change: (args) => {
+						toEl.value = args.value ? toIsoDate(args.value) : '';
+						render();
+					}
+				});
+				toDatePicker.appendTo(toDatePickerEl);
+			}
+			syncCalendarDatePickers();
 
 			applyWorkspaceSplit(readStoredWorkspaceSplit());
 			syncPreviewWorkspaceState();
@@ -2815,7 +2825,7 @@ body .ticket-portal .panel-button.alt {
 					searchAutoComplete.dataSource = buildSearchSuggestions(data);
 					searchAutoComplete.dataBind();
 				}
-				syncDateRangeFromHiddenInputs();
+				syncCalendarDatePickers();
 				render();
 			} catch (error) {
 				console.error(error);
@@ -2910,11 +2920,13 @@ body .ticket-portal .panel-button.alt {
 			}
 			fromEl.value = '';
 			toEl.value = '';
-			if (dateRangePicker) {
-				dateRangePicker.value = null;
-				dateRangePicker.startDate = null;
-				dateRangePicker.endDate = null;
-				dateRangePicker.dataBind();
+			if (fromDatePicker) {
+				fromDatePicker.value = null;
+				fromDatePicker.dataBind();
+			}
+			if (toDatePicker) {
+				toDatePicker.value = null;
+				toDatePicker.dataBind();
 			}
 			sortEl.value = 'account';
 			render();
