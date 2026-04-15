@@ -30,4 +30,4 @@ Run this command to set URL + regenerate QR:
 
 Current portal_public_url in settings:
 
-<https://nking-coolman.github.io/Tickets-Database/?v=20260415-1023>
+<https://nking-coolman.github.io/Coolman-Tickets-Database/?v=20260415-1023>
