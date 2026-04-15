@@ -1811,8 +1811,21 @@ body .ticket-portal .panel-button.alt {
 
 	function loadExternalScript(url) {
 		return new Promise((resolve, reject) => {
+			if (window.jspdf && window.jspdf.jsPDF) {
+				resolve();
+				return;
+			}
+
 			const existing = document.querySelector('script[data-ticket-pdf-lib="true"]');
 			if (existing) {
+				if (existing.dataset.ticketPdfLibReady === 'true') {
+					resolve();
+					return;
+				}
+				if (existing.dataset.ticketPdfLibFailed === 'true') {
+					reject(new Error('Failed to load PDF library.'));
+					return;
+				}
 				existing.addEventListener('load', resolve, { once: true });
 				existing.addEventListener('error', () => reject(new Error('Failed to load PDF library.')), { once: true });
 				return;
@@ -1822,8 +1835,14 @@ body .ticket-portal .panel-button.alt {
 			script.src = url;
 			script.async = true;
 			script.dataset.ticketPdfLib = 'true';
-			script.addEventListener('load', resolve, { once: true });
-			script.addEventListener('error', () => reject(new Error('Failed to load PDF library.')), { once: true });
+			script.addEventListener('load', () => {
+				script.dataset.ticketPdfLibReady = 'true';
+				resolve();
+			}, { once: true });
+			script.addEventListener('error', () => {
+				script.dataset.ticketPdfLibFailed = 'true';
+				reject(new Error('Failed to load PDF library.'));
+			}, { once: true });
 			document.head.appendChild(script);
 		});
 	}
@@ -2831,10 +2850,15 @@ body .ticket-portal .panel-button.alt {
 			}
 
 			const uniqueAccounts = new Set(batchRecords.map((record) => text(record.account)).filter(Boolean)).size;
-			const confirmed = await openConfirmDialog(
-				mode === 'print' ? 'Print filtered tickets' : 'Save filtered tickets',
-				'<div>' + pages.length + ' ticket page' + (pages.length === 1 ? '' : 's') + ' across ' + uniqueAccounts + ' account' + (uniqueAccounts === 1 ? '' : 's') + ' will be used.</div><div style="margin-top:8px;color:#9fb0c0;">Batch actions use the current search and date range result set.</div>',
-				mode === 'print' ? 'Open print window' : 'Generate PDF'
+		const actionTitle = mode === 'print' ? 'Print filtered tickets' : 'Save filtered tickets';
+		const actionSummaryHtml = '<div>' + pages.length + ' ticket page' + (pages.length === 1 ? '' : 's') + ' across ' + uniqueAccounts + ' account' + (uniqueAccounts === 1 ? '' : 's') + ' will be used.</div><div style="margin-top:8px;color:#9fb0c0;">Batch actions use the current search and date range result set.</div>';
+		const actionSummaryText = pages.length + ' ticket page' + (pages.length === 1 ? '' : 's') + ' across ' + uniqueAccounts + ' account' + (uniqueAccounts === 1 ? '' : 's') + ' will be used.';
+		const confirmed = mode === 'pdf'
+			? globalThis.confirm(actionTitle + '\n\n' + actionSummaryText + '\n\nPDF generation can take a minute for larger searches.')
+			: await openConfirmDialog(
+				actionTitle,
+				actionSummaryHtml,
+				'Open print window'
 			);
 			if (!confirmed) {
 				return;
@@ -2852,8 +2876,10 @@ body .ticket-portal .panel-button.alt {
 			const defaultButtonText = savePdfBtn.textContent;
 			savePdfBtn.disabled = true;
 			savePdfBtn.textContent = 'Saving PDF...';
+			notify('info', 'Preparing PDF', 'Starting the filtered PDF export for ' + pages.length + ' ticket page' + (pages.length === 1 ? '' : 's') + '.');
 
 			try {
+				await new Promise((resolve) => globalThis.requestAnimationFrame(resolve));
 				const result = await downloadBatchPdf(batchRecords, qEl.value, (current, total, record) => {
 					stateEl.textContent = 'Generating PDF: ' + current + ' of ' + total + ' | ' + (text(record.account) || text(record.customer) || 'ticket image');
 				});
