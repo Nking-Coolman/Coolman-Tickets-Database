@@ -2067,7 +2067,6 @@ body .ticket-portal .status {
 		let fallbackRows = [];
 		let activeRecord = null;
 		let confirmResolver = null;
-		let pendingSearchFocusRestore = null;
 
 		function notify(kind, title, content) {
 			const messageTitle = text(title) || 'Ticket portal';
@@ -2088,57 +2087,17 @@ body .ticket-portal .status {
 			}
 		}
 
-		function getSearchInputElement() {
-			if (searchAutoComplete && searchAutoComplete.inputElement) {
-				return searchAutoComplete.inputElement;
-			}
-			return qEl;
-		}
-
-		function captureSearchFocusState() {
-			const inputEl = getSearchInputElement();
+		function isSearchInputFocused() {
+			const inputEl = searchAutoComplete && searchAutoComplete.inputElement
+				? searchAutoComplete.inputElement
+				: qEl;
 			const activeEl = document.activeElement;
 			const wrapperEl = searchAutoComplete && searchAutoComplete.inputWrapper && searchAutoComplete.inputWrapper.container;
-			const isSearchFocused = Boolean(
+			return Boolean(
 				inputEl
 				&& activeEl
 				&& (activeEl === inputEl || (wrapperEl && wrapperEl.contains(activeEl)))
 			);
-
-			if (!isSearchFocused) {
-				return null;
-			}
-
-			return {
-				start: typeof inputEl.selectionStart === 'number' ? inputEl.selectionStart : null,
-				end: typeof inputEl.selectionEnd === 'number' ? inputEl.selectionEnd : null
-			};
-		}
-
-		function restoreSearchFocusState(focusState) {
-			if (!focusState) {
-				return;
-			}
-
-			const inputEl = getSearchInputElement();
-			if (!inputEl) {
-				return;
-			}
-
-			globalThis.requestAnimationFrame(() => {
-				inputEl.focus({ preventScroll: true });
-				if (
-					typeof focusState.start === 'number'
-					&& typeof focusState.end === 'number'
-					&& typeof inputEl.setSelectionRange === 'function'
-				) {
-					try {
-						inputEl.setSelectionRange(focusState.start, focusState.end);
-					} catch (error) {
-						return;
-					}
-				}
-			});
 		}
 
 		function setLinkState(linkEl, href) {
@@ -2312,11 +2271,14 @@ body .ticket-portal .status {
 			savePdfBtn.disabled = !hasPrintableRecords;
 		}
 
-		function applyGridRows(rows) {
+		function applyGridRows(rows, autoSelectFirstRow) {
 			if (SYNCFUSION_ACTIVE && gridInstance) {
 				gridHostEl.hidden = false;
 				gridFallbackEl.hidden = true;
-				pendingGridAutoSelection = rows.length > 0;
+				pendingGridAutoSelection = Boolean(autoSelectFirstRow && rows.length > 0);
+				if (!pendingGridAutoSelection && typeof gridInstance.clearSelection === 'function') {
+					gridInstance.clearSelection();
+				}
 				gridInstance.dataSource = rows;
 				if (gridInstance.allowPaging && typeof gridInstance.goToPage === 'function') {
 					gridInstance.goToPage(1);
@@ -2331,7 +2293,7 @@ body .ticket-portal .status {
 			gridHostEl.hidden = true;
 			gridFallbackEl.hidden = false;
 			renderFallbackGrid(rows);
-			if (rows.length) {
+			if (rows.length && autoSelectFirstRow) {
 				setActiveRecord(rows[0].record_ref);
 				const firstRow = gridFallbackEl.querySelector('tbody tr');
 				if (firstRow) {
@@ -2486,16 +2448,10 @@ body .ticket-portal .status {
 					gridLines: 'Both',
 					dataBound: () => {
 						if (!pendingGridAutoSelection || !gridInstance || !gridInstance.currentViewData || !gridInstance.currentViewData.length) {
-							restoreSearchFocusState(pendingSearchFocusRestore);
-							pendingSearchFocusRestore = null;
 							return;
 						}
 						pendingGridAutoSelection = false;
-						globalThis.requestAnimationFrame(() => {
-							gridInstance.selectRow(0);
-							restoreSearchFocusState(pendingSearchFocusRestore);
-							pendingSearchFocusRestore = null;
-						});
+						globalThis.requestAnimationFrame(() => gridInstance.selectRow(0));
 					},
 					rowSelected: (args) => {
 						if (args && args.data && args.data.record_ref) {
@@ -2545,16 +2501,14 @@ body .ticket-portal .status {
 		}
 
 		function render() {
-			const searchFocusState = captureSearchFocusState();
-			pendingSearchFocusRestore = searchFocusState;
 			const terms = parseQueryTerms(qEl.value);
 			const fromDate = fromEl.value;
 			const toDate = toEl.value;
+			const autoSelectFirstRow = !isSearchInputFocused();
 			const hasFilters = Boolean(terms.length || fromDate || toDate);
 			syncUrlState(qEl, fromEl, toEl, sortEl);
 			if (!hasFilters) {
 				renderEmptyState();
-				restoreSearchFocusState(searchFocusState);
 				return;
 			}
 			const searchContext = buildSearchContext(terms);
@@ -2589,15 +2543,13 @@ body .ticket-portal .status {
 			updateSearchInfo(searchContext, filtered);
 			if (!filtered.length) {
 				showGridState('No matching tickets', 'Try a shorter customer search, another account number, or a wider date range.');
-				applyGridRows([]);
+				applyGridRows([], false);
 				setActiveRecord(null);
-				restoreSearchFocusState(searchFocusState);
 				return;
 			}
 			hideGridState();
-			applyGridRows(buildGridRows(filtered));
+			applyGridRows(buildGridRows(filtered), autoSelectFirstRow);
 			setActiveRecord(filtered[0]);
-			restoreSearchFocusState(searchFocusState);
 		}
 
 		loadStateFromUrl(qEl, fromEl, toEl, sortEl);
