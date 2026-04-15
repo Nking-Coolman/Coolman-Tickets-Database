@@ -492,18 +492,18 @@ body .ticket-portal .status {
 	}
 
 	body .ticket-portal .workspace {
-			min-height: 78vh;
-		display: grid;
-			grid-template-columns: minmax(320px, 1.2fr) minmax(380px, 1fr);
-		gap: 12px;
+		--cf-workspace-left-size: 54%;
+		min-height: 78vh;
+		display: flex;
+		gap: 0;
 		align-items: stretch;
 	}
 
-	body .ticket-portal .workspace.e-splitter {
-		display: block;
-			min-height: 78vh;
-		border: 0;
-		background: transparent;
+	body .ticket-portal .workspace.is-dragging,
+	body .ticket-portal .workspace.is-dragging * {
+		cursor: col-resize;
+		-webkit-user-select: none;
+		user-select: none;
 	}
 
 	body .ticket-portal .workspace-left,
@@ -512,6 +512,55 @@ body .ticket-portal .status {
 	body .ticket-portal .preview-panel {
 		height: 100%;
 		min-width: 0;
+	}
+
+	body .ticket-portal .workspace-left {
+		flex: 0 0 var(--cf-workspace-left-size);
+		min-width: 280px;
+	}
+
+	body .ticket-portal .workspace-right {
+		flex: 1 1 0;
+		min-width: 340px;
+	}
+
+	body .ticket-portal .workspace-divider {
+		flex: 0 0 18px;
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: col-resize;
+		touch-action: none;
+	}
+
+	body .ticket-portal .workspace-divider-handle {
+		width: 100%;
+		height: 100%;
+		position: relative;
+		display: block;
+	}
+
+	body .ticket-portal .workspace-divider-handle::before {
+		content: "";
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		width: 6px;
+		height: 76px;
+		border-radius: 999px;
+		transform: translate(-50%, -50%);
+		background: linear-gradient(180deg, rgba(244, 178, 172, 0.95), rgba(84, 177, 222, 0.88));
+		box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.28), 0 10px 20px rgba(0, 0, 0, 0.3);
+		opacity: 0.92;
+		transition: width 160ms ease, opacity 160ms ease, transform 160ms ease;
+	}
+
+	body .ticket-portal .workspace-divider:hover .workspace-divider-handle::before,
+	body .ticket-portal .workspace-divider.is-active .workspace-divider-handle::before {
+		width: 8px;
+		opacity: 1;
+		transform: translate(-50%, -50%) scaleY(1.04);
 	}
 
 	body .ticket-portal .grid-frame,
@@ -815,9 +864,6 @@ body .ticket-portal .panel-button.alt {
 		z-index: 8;
 	}
 
-	body .ticket-portal .e-splitter,
-	body .ticket-portal .e-splitter .e-pane,
-	body .ticket-portal .e-splitter .e-split-bar,
 	body .ticket-portal .e-grid,
 	body .ticket-portal .e-grid .e-gridheader,
 	body .ticket-portal .e-grid .e-gridcontent,
@@ -828,32 +874,6 @@ body .ticket-portal .panel-button.alt {
 	body .ticket-portal .e-toast-container .e-toast {
 		background: #121416;
 		color: var(--cf-ink);
-	}
-
-	body .ticket-portal .e-splitter .e-split-bar {
-		border-color: rgba(255, 255, 255, 0.06);
-			background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
-			cursor: col-resize;
-			position: relative;
-	}
-
-	body .ticket-portal .e-splitter .e-split-bar::before {
-			content: "";
-			position: absolute;
-			left: 50%;
-			top: 50%;
-			width: 4px;
-			height: 62px;
-			border-radius: 999px;
-			transform: translate(-50%, -50%);
-			background: linear-gradient(180deg, rgba(244, 178, 172, 0.9), rgba(84, 177, 222, 0.82));
-			box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.28);
-			opacity: 0.92;
-	}
-
-	body .ticket-portal .e-splitter .e-split-bar:hover::before,
-	body .ticket-portal .e-splitter .e-split-bar.e-split-bar-active::before {
-			width: 6px;
 	}
 
 	body .ticket-portal .e-control,
@@ -967,15 +987,20 @@ body .ticket-portal .panel-button.alt {
 		border-color: rgba(141, 196, 255, 0.24);
 	}
 
-	@media (max-width: 920px) {
+	@media (max-width: 760px) {
 		body .ticket-portal .workspace {
-			grid-template-columns: 1fr;
+			flex-direction: column;
 			min-height: 0;
 		}
 
-		body .ticket-portal .workspace.e-splitter {
-			height: auto;
-			min-height: 0;
+		body .ticket-portal .workspace-left,
+		body .ticket-portal .workspace-right {
+			flex: 1 1 auto;
+			min-width: 0;
+		}
+
+		body .ticket-portal .workspace-divider {
+			display: none;
 		}
 
 		body .ticket-portal .ticket-grid-host,
@@ -1017,7 +1042,8 @@ body .ticket-portal .panel-button.alt {
 			grid-column: auto;
 		}
 
-		body .ticket-portal .panel-link {
+		body .ticket-portal .panel-link,
+		body .ticket-portal .panel-button {
 			flex: 1 1 calc(50% - 8px);
 		}
 	}
@@ -1105,6 +1131,9 @@ body .ticket-portal .panel-button.alt {
 					<div id="gridFallback" class="grid-fallback" hidden></div>
 				</div>
 			</div>
+			<div id="workspaceDivider" class="workspace-divider" aria-label="Resize ticket list and preview panes">
+				<span class="workspace-divider-handle" aria-hidden="true"></span>
+			</div>
 			<aside class="workspace-right">
 				<section id="previewPane" class="preview-panel">
 					<div>
@@ -1146,7 +1175,7 @@ body .ticket-portal .panel-button.alt {
 	const PDF_LIBRARY_URL = 'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js';
 	const WORKSPACE_SPLIT_STORAGE_KEY = 'cf-ticket-workspace-split';
 	const PREVIEW_DETAILS_STORAGE_KEY = 'cf-ticket-preview-details-collapsed';
-	const SPLITTER_MIN_SCREEN_WIDTH = 920;
+	const WORKSPACE_STACK_BREAKPOINT = 760;
 	let customerGroups = [];
 	let searchInfoEl = null;
 	let pdfLibPromise = null;
@@ -1156,7 +1185,6 @@ body .ticket-portal .panel-button.alt {
 	let toastInstance = null;
 	let dialogInstance = null;
 	let gridInstance = null;
-	let splitterInstance = null;
 	let searchAutoComplete = null;
 	let dateRangePicker = null;
 	let pendingGridAutoSelection = false;
@@ -2123,6 +2151,7 @@ body .ticket-portal .panel-button.alt {
 		const openPreviewLinkEl = document.getElementById('openPreviewLink');
 		const openPdfLinkEl = document.getElementById('openPdfLink');
 		const toggleDetailsBtn = document.getElementById('toggleDetailsBtn');
+		const workspaceDividerEl = document.getElementById('workspaceDivider');
 		const toastHostEl = document.getElementById('toastHost');
 		const dialogHostEl = document.getElementById('dialogHost');
 		const qEl = document.getElementById('q');
@@ -2136,7 +2165,7 @@ body .ticket-portal .panel-button.alt {
 		const savePdfBtn = document.getElementById('savePdfBtn');
 		const clearBtn = document.getElementById('clearBtn');
 
-		if (!portalEl || !workspaceEl || !gridHostEl || !gridFallbackEl || !gridStateEl || !countEl || !stateEl || !selectionInfoEl || !searchInfoEl || !previewPaneEl || !previewHeadlineEl || !previewMediaEl || !previewSkeletonEl || !previewEmptyEl || !previewImageEl || !previewMetaEl || !openPreviewLinkEl || !openPdfLinkEl || !toggleDetailsBtn || !toastHostEl || !dialogHostEl || !qEl || !dateRangeEl || !fromEl || !toEl || !sortEl || !applyBtn || !copyLinkBtn || !printAllBtn || !savePdfBtn || !clearBtn) {
+		if (!portalEl || !workspaceEl || !gridHostEl || !gridFallbackEl || !gridStateEl || !countEl || !stateEl || !selectionInfoEl || !searchInfoEl || !previewPaneEl || !previewHeadlineEl || !previewMediaEl || !previewSkeletonEl || !previewEmptyEl || !previewImageEl || !previewMetaEl || !openPreviewLinkEl || !openPdfLinkEl || !toggleDetailsBtn || !workspaceDividerEl || !toastHostEl || !dialogHostEl || !qEl || !dateRangeEl || !fromEl || !toEl || !sortEl || !applyBtn || !copyLinkBtn || !printAllBtn || !savePdfBtn || !clearBtn) {
 			return;
 		}
 
@@ -2152,6 +2181,7 @@ body .ticket-portal .panel-button.alt {
 		let activeRecord = null;
 		let confirmResolver = null;
 		let previewDetailsCollapsed = false;
+		let workspaceDragState = null;
 
 		function notify(kind, title, content) {
 			const messageTitle = text(title) || 'Ticket portal';
@@ -2188,7 +2218,7 @@ body .ticket-portal .panel-button.alt {
 		function readStoredWorkspaceSplit() {
 			try {
 				const rawValue = Number.parseFloat(globalThis.localStorage.getItem(WORKSPACE_SPLIT_STORAGE_KEY) || '');
-				if (Number.isFinite(rawValue) && rawValue >= 32 && rawValue <= 68) {
+				if (Number.isFinite(rawValue) && rawValue >= 24 && rawValue <= 76) {
 					return rawValue;
 				}
 			} catch (error) {
@@ -2197,26 +2227,85 @@ body .ticket-portal .panel-button.alt {
 			return 54;
 		}
 
+		function isWorkspaceStacked() {
+			return globalThis.innerWidth <= WORKSPACE_STACK_BREAKPOINT;
+		}
+
+		function applyWorkspaceSplit(leftPercent) {
+			workspaceEl.style.setProperty('--cf-workspace-left-size', leftPercent.toFixed(2) + '%');
+			syncPreviewWorkspaceState();
+		}
+
+		function clampWorkspaceSplit(rawLeftPercent) {
+			const rect = workspaceEl.getBoundingClientRect();
+			if (!rect.width) {
+				return Math.min(76, Math.max(24, rawLeftPercent));
+			}
+			const minLeftPercent = (280 / rect.width) * 100;
+			const maxLeftPercent = 100 - (340 / rect.width) * 100;
+			return Math.min(Math.max(rawLeftPercent, Math.max(24, minLeftPercent)), Math.min(76, maxLeftPercent));
+		}
+
 		function syncPreviewWorkspaceState() {
+			if (isWorkspaceStacked()) {
+				previewPaneEl.classList.remove('is-preview-expanded');
+				return;
+			}
 			const totalWidth = workspaceEl.getBoundingClientRect().width;
 			const rightWidth = workspaceRightEl.getBoundingClientRect().width;
 			const rightRatio = totalWidth ? rightWidth / totalWidth : 0;
 			previewPaneEl.classList.toggle('is-preview-expanded', rightRatio >= 0.43);
 		}
 
-		function persistWorkspaceSplit() {
-			const totalWidth = workspaceEl.getBoundingClientRect().width;
-			const leftWidth = workspaceLeftEl.getBoundingClientRect().width;
-			if (!totalWidth || !leftWidth) {
-				syncPreviewWorkspaceState();
-				return;
-			}
-			const leftPercent = Math.min(68, Math.max(32, (leftWidth / totalWidth) * 100));
+		function persistWorkspaceSplit(leftPercent) {
+			const nextLeftPercent = Number.isFinite(leftPercent)
+				? clampWorkspaceSplit(leftPercent)
+				: clampWorkspaceSplit((workspaceLeftEl.getBoundingClientRect().width / workspaceEl.getBoundingClientRect().width) * 100);
 			try {
-				globalThis.localStorage.setItem(WORKSPACE_SPLIT_STORAGE_KEY, leftPercent.toFixed(2));
+				globalThis.localStorage.setItem(WORKSPACE_SPLIT_STORAGE_KEY, nextLeftPercent.toFixed(2));
 			} catch (error) {
 				// Ignore storage failures and keep the live layout working.
 			}
+			applyWorkspaceSplit(nextLeftPercent);
+		}
+
+		function updateWorkspaceDrag(clientX) {
+			if (!workspaceDragState) {
+				return;
+			}
+			const { rect } = workspaceDragState;
+			if (!rect.width) {
+				return;
+			}
+			const nextLeftPercent = clampWorkspaceSplit(((clientX - rect.left) / rect.width) * 100);
+			applyWorkspaceSplit(nextLeftPercent);
+		}
+
+		function finishWorkspaceDrag() {
+			if (!workspaceDragState) {
+				return;
+			}
+			workspaceDragState = null;
+			workspaceEl.classList.remove('is-dragging');
+			workspaceDividerEl.classList.remove('is-active');
+			persistWorkspaceSplit();
+		}
+
+		function startWorkspaceDrag(event) {
+			if (isWorkspaceStacked()) {
+				return;
+			}
+			workspaceDragState = {
+				rect: workspaceEl.getBoundingClientRect(),
+				pointerId: event.pointerId
+			};
+			workspaceEl.classList.add('is-dragging');
+			workspaceDividerEl.classList.add('is-active');
+			if (typeof workspaceDividerEl.setPointerCapture === 'function') {
+				workspaceDividerEl.setPointerCapture(event.pointerId);
+			}
+			updateWorkspaceDrag(event.clientX);
+			event.preventDefault();
 			syncPreviewWorkspaceState();
 		}
 
@@ -2559,23 +2648,7 @@ body .ticket-portal .panel-button.alt {
 				syncDateRangeFromHiddenInputs();
 			}
 
-			if (!splitterInstance && globalThis.ej.layouts && globalThis.ej.layouts.Splitter && globalThis.innerWidth > SPLITTER_MIN_SCREEN_WIDTH) {
-				const leftPaneSize = readStoredWorkspaceSplit();
-				const rightPaneSize = (100 - leftPaneSize).toFixed(2) + '%';
-				splitterInstance = new globalThis.ej.layouts.Splitter({
-					height: '78vh',
-					width: '100%',
-					paneSettings: [
-						{ size: leftPaneSize.toFixed(2) + '%', min: '320px' },
-						{ size: rightPaneSize, min: '360px' }
-					],
-					separatorSize: 12,
-					created: () => syncPreviewWorkspaceState(),
-					resizing: () => syncPreviewWorkspaceState(),
-					resizeStop: () => persistWorkspaceSplit()
-				});
-				splitterInstance.appendTo(workspaceEl);
-			}
+			applyWorkspaceSplit(readStoredWorkspaceSplit());
 			syncPreviewWorkspaceState();
 
 			ensurePreviewSkeleton();
@@ -2704,6 +2777,7 @@ body .ticket-portal .panel-button.alt {
 		loadStateFromUrl(qEl, fromEl, toEl, sortEl);
 		mountSyncfusionUi();
 		applyPreviewDetailsState(readStoredPreviewDetailsState());
+		applyWorkspaceSplit(readStoredWorkspaceSplit());
 		globalThis.addEventListener('resize', syncPreviewWorkspaceState);
 		renderEmptyState();
 
@@ -2822,6 +2896,15 @@ body .ticket-portal .panel-button.alt {
 		toggleDetailsBtn.addEventListener('click', () => {
 			applyPreviewDetailsState(!previewDetailsCollapsed);
 		});
+		workspaceDividerEl.addEventListener('pointerdown', startWorkspaceDrag);
+		workspaceDividerEl.addEventListener('pointermove', (event) => {
+			if (!workspaceDragState || workspaceDragState.pointerId !== event.pointerId) {
+				return;
+			}
+			updateWorkspaceDrag(event.clientX);
+		});
+		workspaceDividerEl.addEventListener('pointerup', finishWorkspaceDrag);
+		workspaceDividerEl.addEventListener('pointercancel', finishWorkspaceDrag);
 		qEl.addEventListener('input', render);
 		qEl.addEventListener('keydown', (event) => {
 			if (event.key === 'Enter') {
