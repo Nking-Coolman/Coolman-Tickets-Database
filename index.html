@@ -2067,6 +2067,7 @@ body .ticket-portal .status {
 		let fallbackRows = [];
 		let activeRecord = null;
 		let confirmResolver = null;
+		let pendingSearchFocusRestore = null;
 
 		function notify(kind, title, content) {
 			const messageTitle = text(title) || 'Ticket portal';
@@ -2085,6 +2086,59 @@ body .ticket-portal .status {
 			if (kind === 'error' && globalThis.console && typeof globalThis.console.error === 'function') {
 				globalThis.console.error(messageContent);
 			}
+		}
+
+		function getSearchInputElement() {
+			if (searchAutoComplete && searchAutoComplete.inputElement) {
+				return searchAutoComplete.inputElement;
+			}
+			return qEl;
+		}
+
+		function captureSearchFocusState() {
+			const inputEl = getSearchInputElement();
+			const activeEl = document.activeElement;
+			const wrapperEl = searchAutoComplete && searchAutoComplete.inputWrapper && searchAutoComplete.inputWrapper.container;
+			const isSearchFocused = Boolean(
+				inputEl
+				&& activeEl
+				&& (activeEl === inputEl || (wrapperEl && wrapperEl.contains(activeEl)))
+			);
+
+			if (!isSearchFocused) {
+				return null;
+			}
+
+			return {
+				start: typeof inputEl.selectionStart === 'number' ? inputEl.selectionStart : null,
+				end: typeof inputEl.selectionEnd === 'number' ? inputEl.selectionEnd : null
+			};
+		}
+
+		function restoreSearchFocusState(focusState) {
+			if (!focusState) {
+				return;
+			}
+
+			const inputEl = getSearchInputElement();
+			if (!inputEl) {
+				return;
+			}
+
+			globalThis.requestAnimationFrame(() => {
+				inputEl.focus({ preventScroll: true });
+				if (
+					typeof focusState.start === 'number'
+					&& typeof focusState.end === 'number'
+					&& typeof inputEl.setSelectionRange === 'function'
+				) {
+					try {
+						inputEl.setSelectionRange(focusState.start, focusState.end);
+					} catch (error) {
+						return;
+					}
+				}
+			});
 		}
 
 		function setLinkState(linkEl, href) {
@@ -2432,10 +2486,16 @@ body .ticket-portal .status {
 					gridLines: 'Both',
 					dataBound: () => {
 						if (!pendingGridAutoSelection || !gridInstance || !gridInstance.currentViewData || !gridInstance.currentViewData.length) {
+							restoreSearchFocusState(pendingSearchFocusRestore);
+							pendingSearchFocusRestore = null;
 							return;
 						}
 						pendingGridAutoSelection = false;
-						globalThis.requestAnimationFrame(() => gridInstance.selectRow(0));
+						globalThis.requestAnimationFrame(() => {
+							gridInstance.selectRow(0);
+							restoreSearchFocusState(pendingSearchFocusRestore);
+							pendingSearchFocusRestore = null;
+						});
 					},
 					rowSelected: (args) => {
 						if (args && args.data && args.data.record_ref) {
@@ -2485,6 +2545,8 @@ body .ticket-portal .status {
 		}
 
 		function render() {
+			const searchFocusState = captureSearchFocusState();
+			pendingSearchFocusRestore = searchFocusState;
 			const terms = parseQueryTerms(qEl.value);
 			const fromDate = fromEl.value;
 			const toDate = toEl.value;
@@ -2492,6 +2554,7 @@ body .ticket-portal .status {
 			syncUrlState(qEl, fromEl, toEl, sortEl);
 			if (!hasFilters) {
 				renderEmptyState();
+				restoreSearchFocusState(searchFocusState);
 				return;
 			}
 			const searchContext = buildSearchContext(terms);
@@ -2528,11 +2591,13 @@ body .ticket-portal .status {
 				showGridState('No matching tickets', 'Try a shorter customer search, another account number, or a wider date range.');
 				applyGridRows([]);
 				setActiveRecord(null);
+				restoreSearchFocusState(searchFocusState);
 				return;
 			}
 			hideGridState();
 			applyGridRows(buildGridRows(filtered));
 			setActiveRecord(filtered[0]);
+			restoreSearchFocusState(searchFocusState);
 		}
 
 		loadStateFromUrl(qEl, fromEl, toEl, sortEl);
